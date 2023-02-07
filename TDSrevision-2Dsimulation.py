@@ -217,7 +217,7 @@ def particule_seule():
     iteration_coll=[] # iterations à lesquelles l'atome 0 subit une collision
     iteration_vitesse=[] # vitesse de la particule 0 à chaque itération  
 
-    for r in range(400): #nombre d'itération de pas dt
+    for r in range(200): #nombre d'itération de pas dt
         rate(25)  # limite la vitesse de calcul de la simulation pour que l'animation soit visible à l'oeil humain!
 
         #### DÉPLACE TOUTES LES SPHÈRES D'UN PAS SPATIAL deltax
@@ -332,10 +332,23 @@ vitesse_entre_coll_x_seule = [vitesse_entre_coll_vecteur_seule[i].x for i in ran
 #print(vitesse_entre_coll_carre_seule)
 #print(vitesse_entre_coll_x_seule)
 
+fig1=plt.figure()
 
+fig1, axs = plt.subplots(3, 1)
 
+axs[0].hist(vitesse_entre_coll_mag_seule, bins=20, edgecolor='black', color='red')
+axs[0].title.set_text('Module de la vitesse ||v||')
 
-plt.hist(vitesse_entre_coll_mag_seule, bins=10, edgecolor='black', color='red')
-plt.hist(vitesse_entre_coll_carre_seule, bins=10, edgecolor='black', color='green')
+axs[1].hist(vitesse_entre_coll_carre_seule, bins=20, edgecolor='black', color='green')
+axs[1].title.set_text('Module de la vitesse au carré ||v^2||')
+
+axs[2].hist(vitesse_entre_coll_x_seule, bins=20, edgecolor='black', color='blue')
+axs[2].title.set_text('Module de la vitesse en x ||v_x||')
+axs[2].set_ylabel("Quantité d'inter collisions")
+axs[2].set_xlabel("Vitesse [m/s]")
+
+plt.tight_layout()
+
+#fig1.savefig("/Users/david.tremblay7/Desktop/histo_vitesses.pdf", bbox_inches='tight')
 
 plt.show()
