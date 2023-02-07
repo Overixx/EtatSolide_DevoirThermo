@@ -341,10 +341,10 @@ axs[0].title.set_text('Module de la vitesse ||v||')
 
 axs[1].hist(vitesse_entre_coll_carre_seule, bins=20, edgecolor='black', color='green')
 axs[1].title.set_text('Module de la vitesse au carré ||v^2||')
+axs[1].set_ylabel("Quantité d'inter collisions")
 
 axs[2].hist(vitesse_entre_coll_x_seule, bins=20, edgecolor='black', color='blue')
 axs[2].title.set_text('Module de la vitesse en x ||v_x||')
-axs[2].set_ylabel("Quantité d'inter collisions")
 axs[2].set_xlabel("Vitesse [m/s]")
 
 plt.tight_layout()
