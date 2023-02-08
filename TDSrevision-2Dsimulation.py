@@ -218,7 +218,7 @@ def particule_seule():
     iteration_vitesse=[] # vitesse de la particule 0 à chaque itération  
 
     for r in range(200): #nombre d'itération de pas dt
-        rate(25)  # limite la vitesse de calcul de la simulation pour que l'animation soit visible à l'oeil humain!
+        rate(5)  # limite la vitesse de calcul de la simulation pour que l'animation soit visible à l'oeil humain!
 
         #### DÉPLACE TOUTES LES SPHÈRES D'UN PAS SPATIAL deltax
         vitesse = []   # vitesse instantanée de chaque sphère
