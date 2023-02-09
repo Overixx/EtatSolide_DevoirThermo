@@ -218,7 +218,7 @@ def particule_seule():
     iteration_vitesse=[] # vitesse de la particule 0 à chaque itération  
 
     for r in range(200): #nombre d'itération de pas dt
-        rate(5)  # limite la vitesse de calcul de la simulation pour que l'animation soit visible à l'oeil humain!
+        rate(25)  # limite la vitesse de calcul de la simulation pour que l'animation soit visible à l'oeil humain!
 
         #### DÉPLACE TOUTES LES SPHÈRES D'UN PAS SPATIAL deltax
         vitesse = []   # vitesse instantanée de chaque sphère
@@ -290,7 +290,9 @@ def particule_seule():
             apos[j] = posj+(p[j]/mass)*deltat
 
 
+    print(iteration_coll)
     nb_iteration_entre_coll = [j-i for i, j in zip(iteration_coll[:-1], iteration_coll[1:])] # nombre d'itérations entre deux itérations correspondantes à une collision de l'atome 0
+    print(nb_iteration_entre_coll)
     temps_entre_coll = [i * dt for i in nb_iteration_entre_coll]
 
     vitesse_coll_mag = [mag(iteration_vitesse[i]) for i in iteration_coll]
