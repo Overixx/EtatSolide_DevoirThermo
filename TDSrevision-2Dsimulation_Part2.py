@@ -20,6 +20,7 @@ import matplotlib.pyplot as plt
 
 # Déclaration de variables influençant le temps d'exécution de la simulation
 Natoms = 200  # change this to have more or fewer atoms
+Ncoeurs = 9 # Nb de coeurs
 dt = 1E-5  # pas d'incrémentation temporel
 
 # Déclaration de variables physiques "Typical values"
@@ -29,7 +30,7 @@ k = 1.4E-23 # Boltzmann constant # TODO: changer pour une constante de Boltzmann
 T = 300 # around room temperature
 
 #### CANEVAS DE FOND ####
-L = 1 # container is a cube L on a side
+L = 4 # container is a cube L on a side
 gray = color.gray(0.7) # color of edges of container and spheres below
 animation = canvas( width=750, height=500) # , align='left')
 animation.range = L
@@ -47,17 +48,24 @@ cadre.append([vector(-d,-d,0), vector(d,-d,0), vector(d,d,0), vector(-d,d,0), ve
 
 #### POSITION ET QUANTITÉ DE MOUVEMENT INITIALE DES SPHÈRES ####
 Atoms = [] # Objet qui contiendra les sphères pour l'animation
+Coeurs = []
 p = [] # quantité de mouvement des sphères
 apos = [] # position des sphères
 pavg = sqrt(2*mass*1.5*k*T) # average kinetic energy p**2/(2mass) = (3/2)kT : Principe de l'équipartition de l'énergie en thermodynamique statistique classique # TODO: Changer pour quantités de mouvement initiales aléatoires sur une plage raisonnable cohérente avec température pièce
+
+# On place les coeurs immobile dans la boite et les électrons
+x = [-1,0,1]
+y = [-1,0,1]
+z = 0
+for i in x:
+    for c in y:
+        Coeurs.append(simple_sphere(pos=vector(i,c,0), radius=0.10, color=color.magenta))
 
 for i in range(Natoms):
     x = L*random()-L/2 # position aléatoire qui tient compte que l'origine est au centre de la boîte
     y = L*random()-L/2
     z = 0
-    if i == 0:  # garde une sphère plus grosse et colorée parmis toutes les grises
-        Atoms.append(simple_sphere(pos=vector(x,y,z), radius=0.03, color=color.magenta)) #, make_trail=True, retain=100, trail_radius=0.3*Ratom))
-    else: Atoms.append(simple_sphere(pos=vector(x,y,z), radius=Ratom, color=gray))
+    Atoms.append(simple_sphere(pos=vector(x,y,z), radius=Ratom, color=gray))
     apos.append(vec(x,y,z)) # liste de la position initiale de toutes les sphères
 #    theta = pi*random() # direction de coordonnées sphériques, superflue en 2D
     phi = 2*pi*random() # direction aléatoire pour la quantité de mouvement
@@ -65,6 +73,22 @@ for i in range(Natoms):
     py = pavg*sin(phi)
     pz = 0
     p.append(vector(px,py,pz)) # liste de la quantité de mouvement initiale de toutes les sphères
+
+
+#for i in range(Natoms):
+    #x = L*random()-L/2 # position aléatoire qui tient compte que l'origine est au centre de la boîte
+    #y = L*random()-L/2
+    #z = 0
+    #if i == 0:  # garde une sphère plus grosse et colorée parmis toutes les grises
+     #   Atoms.append(simple_sphere(pos=vector(x,y,z), radius=0.03, color=color.magenta)) #, make_trail=True, retain=100, trail_radius=0.3*Ratom))
+    #else: Atoms.append(simple_sphere(pos=vector(x,y,z), radius=Ratom, color=gray))
+    #apos.append(vec(x,y,z)) # liste de la position initiale de toutes les sphères
+#    theta = pi*random() # direction de coordonnées sphériques, superflue en 2D
+    #phi = 2*pi*random() # direction aléatoire pour la quantité de mouvement
+    #px = pavg*cos(phi)  # qte de mvt initiale selon l'équipartition
+    #py = pavg*sin(phi)
+    #pz = 0
+    #p.append(vector(px,py,pz)) # liste de la quantité de mouvement initiale de toutes les sphères
 
 #### FONCTION POUR IDENTIFIER LES COLLISIONS, I.E. LORSQUE LA DISTANCE ENTRE LES CENTRES DE 2 SPHÈRES EST À LA LIMITE DE S'INTERPÉNÉTRER ####
 def checkCollisions():
@@ -147,3 +171,5 @@ while True:
         p[j] = pcomj+mass*Vcom
         apos[i] = posi+(p[i]/mass)*deltat # move forward deltat in time, ramenant au même temps où sont rendues les autres sphères dans l'itération
         apos[j] = posj+(p[j]/mass)*deltat
+
+    
