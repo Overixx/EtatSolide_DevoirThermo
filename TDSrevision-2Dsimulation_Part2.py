@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 
 # Déclaration de variables influençant le temps d'exécution de la simulation
 Natoms = 200  # change this to have more or fewer atoms
-Ncoeurs = 9 # Nb de coeurs
+Ncoeurs = 81 # Nb de coeurs (doit être un nombre impair au carré)
 dt = 1E-5  # pas d'incrémentation temporel
 
 # Déclaration de variables physiques "Typical values"
@@ -51,16 +51,24 @@ Atoms = [] # Objet qui contiendra les sphères pour l'animation
 Coeurs = []
 p = [] # quantité de mouvement des sphères
 apos = [] # position des sphères
+coeurs_pos = []
 pavg = sqrt(2*mass*1.5*k*T) # average kinetic energy p**2/(2mass) = (3/2)kT : Principe de l'équipartition de l'énergie en thermodynamique statistique classique # TODO: Changer pour quantités de mouvement initiales aléatoires sur une plage raisonnable cohérente avec température pièce
 
-# On place les coeurs immobile dans la boite et les électrons
-x = [-1,0,1]
-y = [-1,0,1]
+# On place les coeurs immobile dans la boite  
+x = []
+for i in range(int(-(sqrt(Ncoeurs) - 1)/2), int((sqrt(Ncoeurs) -1)/2) + 1):
+    x.append(i*L/(sqrt(Ncoeurs) + 1))
+y = []
+for i in range(int(-(sqrt(Ncoeurs) - 1)/2), int((sqrt(Ncoeurs) -1)/2) + 1):
+    y.append(i*L/(sqrt(Ncoeurs) + 1))
 z = 0
 for i in x:
     for c in y:
-        Coeurs.append(simple_sphere(pos=vector(i,c,0), radius=0.10, color=color.magenta))
+        Coeurs.append(simple_sphere(pos=vector(i,c,0), radius=0.02, color=color.magenta))
+        coeurs_pos.append(vec(i,c,0))
 
+
+# On place les électrons
 for i in range(Natoms):
     x = L*random()-L/2 # position aléatoire qui tient compte que l'origine est au centre de la boîte
     y = L*random()-L/2
@@ -97,8 +105,8 @@ def checkCollisions():
     r2 *= r2   # produit scalaire pour éviter une comparaison vectorielle ci-dessous
     for i in range(Natoms):
         ai = apos[i]
-        for j in range(i) :
-            aj = apos[j]
+        for j in range(Ncoeurs) :
+            aj = coeurs_pos[j]
             dr = ai - aj   # la boucle dans une boucle itère pour calculer cette distance vectorielle dr entre chaque paire de sphère
             if mag2(dr) < r2:   # test de collision où mag2(dr) qui retourne la norme élevée au carré de la distance intersphère dr
                 hitlist.append([i,j]) # liste numérotant toutes les paires de sphères en collision
@@ -165,6 +173,7 @@ while True:
         pcomi = p[i]-mass*Vcom  # transform momenta to center-of-momentum (com) frame
         pcomj = p[j]-mass*Vcom
         rrel = hat(rrel)    # vecteur unitaire aligné avec rrel
+
         pcomi = pcomi-2*dot(pcomi,rrel)*rrel # bounce in center-of-momentum (com) frame
         pcomj = pcomj-2*dot(pcomj,rrel)*rrel  # TODO: convertir avec masse réduite et vitesse du centre de masse en corrigeant les unités
         p[i] = pcomi+mass*Vcom # transform momenta back to lab frame
