@@ -15,12 +15,14 @@ from vpython import *
 import numpy as np
 import math
 import matplotlib.pyplot as plt
+import scipy
+from scipy.stats import maxwell
 
 # win = 500 # peut aider à définir la taille d'un autre objet visuel comme un histogramme proportionnellement à la taille du canevas.
 
 # Déclaration de variables influençant le temps d'exécution de la simulation
 Natoms = 200  # change this to have more or fewer atoms
-Ncoeurs = 81 # Nb de coeurs (doit être un nombre impair au carré)
+Ncoeurs = 25 # Nb de coeurs (doit être un nombre impair au carré pour produire un nombre périodique de coeurs)
 dt = 1E-5  # pas d'incrémentation temporel
 
 # Déclaration de variables physiques "Typical values"
@@ -50,9 +52,9 @@ cadre.append([vector(-d,-d,0), vector(d,-d,0), vector(d,d,0), vector(-d,d,0), ve
 Atoms = [] # Objet qui contiendra les sphères pour l'animation
 Coeurs = []
 p = [] # quantité de mouvement des sphères
-apos = [] # position des sphères
-coeurs_pos = []
-pavg = sqrt(2*mass*1.5*k*T) # average kinetic energy p**2/(2mass) = (3/2)kT : Principe de l'équipartition de l'énergie en thermodynamique statistique classique # TODO: Changer pour quantités de mouvement initiales aléatoires sur une plage raisonnable cohérente avec température pièce
+apos = [] # position des électrons
+coeurs_pos = [] # Position des coeurs
+pavg = sqrt(2*mass*1.5*k*T)/maxwell.rvs() # average kinetic energy p**2/(2mass) = (3/2)kT : Principe de l'équipartition de l'énergie en thermodynamique statistique classique # TODO: Changer pour quantités de mouvement initiales aléatoires sur une plage raisonnable cohérente avec température pièce
 
 # On place les coeurs immobile dans la boite  
 x = []
@@ -67,36 +69,19 @@ for i in x:
         Coeurs.append(simple_sphere(pos=vector(i,c,0), radius=0.02, color=color.magenta))
         coeurs_pos.append(vec(i,c,0))
 
-
 # On place les électrons
 for i in range(Natoms):
     x = L*random()-L/2 # position aléatoire qui tient compte que l'origine est au centre de la boîte
     y = L*random()-L/2
     z = 0
     Atoms.append(simple_sphere(pos=vector(x,y,z), radius=Ratom, color=gray))
-    apos.append(vec(x,y,z)) # liste de la position initiale de toutes les sphères
+    apos.append(vec(x,y,z)) # liste de la position initiale de toutes les sphères (ÉLECTRONS)
 #    theta = pi*random() # direction de coordonnées sphériques, superflue en 2D
     phi = 2*pi*random() # direction aléatoire pour la quantité de mouvement
     px = pavg*cos(phi)  # qte de mvt initiale selon l'équipartition
     py = pavg*sin(phi)
     pz = 0
-    p.append(vector(px,py,pz)) # liste de la quantité de mouvement initiale de toutes les sphères
-
-
-#for i in range(Natoms):
-    #x = L*random()-L/2 # position aléatoire qui tient compte que l'origine est au centre de la boîte
-    #y = L*random()-L/2
-    #z = 0
-    #if i == 0:  # garde une sphère plus grosse et colorée parmis toutes les grises
-     #   Atoms.append(simple_sphere(pos=vector(x,y,z), radius=0.03, color=color.magenta)) #, make_trail=True, retain=100, trail_radius=0.3*Ratom))
-    #else: Atoms.append(simple_sphere(pos=vector(x,y,z), radius=Ratom, color=gray))
-    #apos.append(vec(x,y,z)) # liste de la position initiale de toutes les sphères
-#    theta = pi*random() # direction de coordonnées sphériques, superflue en 2D
-    #phi = 2*pi*random() # direction aléatoire pour la quantité de mouvement
-    #px = pavg*cos(phi)  # qte de mvt initiale selon l'équipartition
-    #py = pavg*sin(phi)
-    #pz = 0
-    #p.append(vector(px,py,pz)) # liste de la quantité de mouvement initiale de toutes les sphères
+    p.append(vector(px,py,pz)) # liste de la quantité de mouvement initiale de toutes les sphères (ÉLECTRONS)
 
 #### FONCTION POUR IDENTIFIER LES COLLISIONS, I.E. LORSQUE LA DISTANCE ENTRE LES CENTRES DE 2 SPHÈRES EST À LA LIMITE DE S'INTERPÉNÉTRER ####
 def checkCollisions():
@@ -105,8 +90,8 @@ def checkCollisions():
     r2 *= r2   # produit scalaire pour éviter une comparaison vectorielle ci-dessous
     for i in range(Natoms):
         ai = apos[i]
-        for j in range(Ncoeurs) :
-            aj = coeurs_pos[j]
+        for j in range(Ncoeurs) : # On change "i" pour "Ncoeurs" pour n'enregistrer que les collisions avec les coeurs
+            aj = coeurs_pos[j] # On change "apos[j]" pour "coeurs_pos[j]" pour que les collisions ne se fassent qu'avec les coeurs
             dr = ai - aj   # la boucle dans une boucle itère pour calculer cette distance vectorielle dr entre chaque paire de sphère
             if mag2(dr) < r2:   # test de collision où mag2(dr) qui retourne la norme élevée au carré de la distance intersphère dr
                 hitlist.append([i,j]) # liste numérotant toutes les paires de sphères en collision
@@ -149,8 +134,8 @@ while True:
         ptot = p[i]+p[j]   # quantité de mouvement totale des 2 sphères
         mtot = 2*mass    # masse totale des 2 sphères
         Vcom = ptot/mtot   # vitesse du référentiel barycentrique/center-of-momentum (com) frame
-        posi = apos[i]   # position de chacune des 2 sphères
-        posj = apos[j]
+        posi = apos[i]   # position de chacune des électrons
+        posj = coeurs_pos[j] # On change "apos[j]" pour "coeurs_pos[j]" pour que les collisions ne se fassent qu'avec les coeurs
         vi = p[i]/mass   # vitesse de chacune des 2 sphères
         vj = p[j]/mass
         rrel = posi-posj  # vecteur pour la distance entre les centres des 2 sphères
@@ -179,6 +164,7 @@ while True:
         p[i] = pcomi+mass*Vcom # transform momenta back to lab frame
         p[j] = pcomj+mass*Vcom
         apos[i] = posi+(p[i]/mass)*deltat # move forward deltat in time, ramenant au même temps où sont rendues les autres sphères dans l'itération
-        apos[j] = posj+(p[j]/mass)*deltat
+        # On change "apos[j]" pour "coeurs_pos[j]" pour que les collisions ne se fassent qu'avec les coeurs
+        coeurs_pos[j] = posj+(p[j]/mass)*deltat
 
     
