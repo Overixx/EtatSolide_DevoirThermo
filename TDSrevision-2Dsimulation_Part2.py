@@ -54,7 +54,9 @@ Coeurs = []
 p = [] # quantité de mouvement des sphères
 apos = [] # position des électrons
 coeurs_pos = [] # Position des coeurs
-pavg = sqrt(2*mass*1.5*k*T)/maxwell.rvs() # average kinetic energy p**2/(2mass) = (3/2)kT : Principe de l'équipartition de l'énergie en thermodynamique statistique classique # TODO: Changer pour quantités de mouvement initiales aléatoires sur une plage raisonnable cohérente avec température pièce
+a = sqrt(k*T/mass)
+pavg = sqrt(2*mass*1.5*k*T)
+
 
 # On place les coeurs immobile dans la boite  
 x = []
@@ -71,6 +73,7 @@ for i in x:
 
 # On place les électrons
 for i in range(Natoms):
+    print((maxwell.rvs(scale=a))**2*mass*pi/(8*k))
     x = L*random()-L/2 # position aléatoire qui tient compte que l'origine est au centre de la boîte
     y = L*random()-L/2
     z = 0
@@ -102,7 +105,7 @@ def checkCollisions():
 ## ALTERNATIVE : vous pouvez bien sûr remplacer la boucle "while" par une boucle "for" avec un nombre d'itérations suffisant pour obtenir une bonne distribution statistique à l'équilibre
 
 while True:
-    rate(300)  # limite la vitesse de calcul de la simulation pour que l'animation soit visible à l'oeil humain!
+    rate(50)  # limite la vitesse de calcul de la simulation pour que l'animation soit visible à l'oeil humain!
 
     #### DÉPLACE TOUTES LES SPHÈRES D'UN PAS SPATIAL deltax
     vitesse = []   # vitesse instantanée de chaque sphère
@@ -128,18 +131,19 @@ while True:
     #### CONSERVE LA QUANTITÉ DE MOUVEMENT AUX COLLISIONS ENTRE SPHÈRES ####
     for ij in hitlist:
 
+        
         # définition de nouvelles variables pour chaque paire de sphères en collision
         i = ij[0]  # extraction du numéro des 2 sphères impliquées à cette itération
         j = ij[1]
-        ptot = p[i]+p[j]   # quantité de mouvement totale des 2 sphères
+        ptot = p[i]#+p[j]   # quantité de mouvement totale des 2 sphères
         mtot = 2*mass    # masse totale des 2 sphères
         Vcom = ptot/mtot   # vitesse du référentiel barycentrique/center-of-momentum (com) frame
         posi = apos[i]   # position de chacune des électrons
         posj = coeurs_pos[j] # On change "apos[j]" pour "coeurs_pos[j]" pour que les collisions ne se fassent qu'avec les coeurs
         vi = p[i]/mass   # vitesse de chacune des 2 sphères
-        vj = p[j]/mass
+        #vj = p[j]/mass
         rrel = posi-posj  # vecteur pour la distance entre les centres des 2 sphères
-        vrel = vj-vi   # vecteur pour la différence de vitesse entre les 2 sphères
+        vrel = -vi   # vecteur pour la différence de vitesse entre les 2 sphères
 
         # exclusion de cas où il n'y a pas de changements à faire
         if vrel.mag2 == 0: continue  # exactly same velocities si et seulement si le vecteur vrel devient nul, la trajectoire des 2 sphères continue alors côte à côte
@@ -154,17 +158,17 @@ while True:
 
         #### CHANGE L'INTERPÉNÉTRATION DES SPHÈRES PAR LA CINÉTIQUE DE COLLISION ####
         posi = posi-vi*deltat   # back up to contact configuration
-        posj = posj-vj*deltat
+        #posj = posj-vj*deltat
         pcomi = p[i]-mass*Vcom  # transform momenta to center-of-momentum (com) frame
-        pcomj = p[j]-mass*Vcom
+        pcomj = -mass*Vcom
         rrel = hat(rrel)    # vecteur unitaire aligné avec rrel
 
         pcomi = pcomi-2*dot(pcomi,rrel)*rrel # bounce in center-of-momentum (com) frame
         pcomj = pcomj-2*dot(pcomj,rrel)*rrel  # TODO: convertir avec masse réduite et vitesse du centre de masse en corrigeant les unités
         p[i] = pcomi+mass*Vcom # transform momenta back to lab frame
-        p[j] = pcomj+mass*Vcom
+        #p[j] = pcomj+mass*Vcom
         apos[i] = posi+(p[i]/mass)*deltat # move forward deltat in time, ramenant au même temps où sont rendues les autres sphères dans l'itération
         # On change "apos[j]" pour "coeurs_pos[j]" pour que les collisions ne se fassent qu'avec les coeurs
-        coeurs_pos[j] = posj+(p[j]/mass)*deltat
+        #coeurs_pos[j] = posj+(p[j]/mass)*deltat
 
     
